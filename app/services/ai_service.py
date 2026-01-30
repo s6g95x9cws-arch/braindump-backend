@@ -1,6 +1,6 @@
 import google.generativeai as genai
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from app.core.config import settings
 from app.models.schemas import BrainDumpResponse
 import time
@@ -23,7 +23,8 @@ class AIService:
         # For MVP, we upload and process.
         sample_audio = genai.upload_file(audio_file_path)
         
-        current_time = datetime.now().isoformat()
+        # Ensure UTC time is used for consistency
+        current_time = datetime.now(timezone.utc).isoformat()
         
         # Try with Flash first, fallback to Pro
         # Implementing simple retry logic for rate limits
@@ -62,7 +63,7 @@ class AIService:
         """
         Process text directly without audio.
         """
-        current_time = datetime.now().isoformat()
+        current_time = datetime.now(timezone.utc).isoformat()
         
         system_prompt = self._get_system_prompt(current_time)
         
@@ -107,7 +108,7 @@ class AIService:
         # MIME type inference is usually automatic by file extension
         sample_image = genai.upload_file(image_file_path)
         
-        current_time = datetime.now().isoformat()
+        current_time = datetime.now(timezone.utc).isoformat()
         system_prompt = self._get_vision_system_prompt(current_time)
         
         # Try with Flash (it supports vision)
@@ -183,8 +184,9 @@ class AIService:
             - REMINDER: Time-specific tasks (e.g., "Take medicine at 1").
 
         4. Extract precise dates and times relative to the current time provided above.
-           - If user says "tomorrow", calculate the date.
-           - If user says "next tuesday", calculate the date.
+           - IMPORTANT: The "Current Date/Time" above is in UTC.
+           - All calculated 'datetime_iso' values MUST be in UTC.
+           - YOU MUST APPEND 'Z' TO THE END OF THE ISO STRING (e.g., "2024-01-01T12:00:00Z").
 
         5. Return ONLY a JSON object matching this schema.
         
@@ -196,7 +198,7 @@ class AIService:
               "type": "CALENDAR_EVENT" | "SHOPPING_ITEM" | "TODO" | "NOTE" | "ALARM" | "REMINDER",
               "content": "The action description",
               "category": "Optional category (e.g., Health, Work, Personal)",
-              "datetime_iso": "ISO 8601 date string or null",
+              "datetime_iso": "ISO 8601 date string ending in Z or null",
               "priority": "HIGH" | "MEDIUM" | "LOW" | null,
               "confidence": 0.0 to 1.0
             }}
@@ -223,7 +225,8 @@ class AIService:
            - SCREENSHOT OF CHAT -> Extract tasks/events mentioned.
            
         3. If there is a date explicitly visible in the image (like on an invitation), use that for 'datetime_iso'.
-        4. Return ONLY a JSON object matching the BrainDump schema.
+        4. ALL ISO Dates MUST BE IN UTC and end with 'Z'.
+        5. Return ONLY a JSON object matching the BrainDump schema.
         
         Schema (Same as audio/text):
         {{
@@ -233,7 +236,7 @@ class AIService:
               "type": "CALENDAR_EVENT" | "SHOPPING_ITEM" | "TODO" | "NOTE" | "ALARM" | "REMINDER",
               "content": "Description of the action extracted from image",
               "category": "Vision",
-              "datetime_iso": "ISO 8601 date string or null",
+              "datetime_iso": "ISO 8601 date string ending in Z or null",
               "priority": "HIGH" | "MEDIUM" | "LOW" | null,
               "confidence": 0.0 to 1.0
             }}
