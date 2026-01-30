@@ -242,8 +242,6 @@ class AIService:
         """
 
     def _parse_response(self, response) -> BrainDumpResponse:
-
-    def _parse_response(self, response) -> BrainDumpResponse:
         try:
             # Handle potential markdown code blocks
             text = response.text
