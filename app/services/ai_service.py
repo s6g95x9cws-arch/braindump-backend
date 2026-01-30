@@ -23,8 +23,8 @@ class AIService:
         # For MVP, we upload and process.
         sample_audio = genai.upload_file(audio_file_path)
         
-        # Ensure UTC time is used for consistency
-        current_time = datetime.now(timezone.utc).isoformat()
+        # Ensure UTC time is used for consistency, explicitly formatted with Z
+        current_time = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
         
         # Try with Flash first, fallback to Pro
         # Implementing simple retry logic for rate limits
@@ -63,7 +63,7 @@ class AIService:
         """
         Process text directly without audio.
         """
-        current_time = datetime.now(timezone.utc).isoformat()
+        current_time = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
         
         system_prompt = self._get_system_prompt(current_time)
         
@@ -108,7 +108,7 @@ class AIService:
         # MIME type inference is usually automatic by file extension
         sample_image = genai.upload_file(image_file_path)
         
-        current_time = datetime.now(timezone.utc).isoformat()
+        current_time = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
         system_prompt = self._get_vision_system_prompt(current_time)
         
         # Try with Flash (it supports vision)
@@ -184,9 +184,10 @@ class AIService:
             - REMINDER: Time-specific tasks (e.g., "Take medicine at 1").
 
         4. Extract precise dates and times relative to the current time provided above.
-           - IMPORTANT: The "Current Date/Time" above is in UTC.
-           - All calculated 'datetime_iso' values MUST be in UTC.
-           - YOU MUST APPEND 'Z' TO THE END OF THE ISO STRING (e.g., "2024-01-01T12:00:00Z").
+           - IMPORTANT: The "Current Date/Time" above is in UTC (Z-suffixed).
+           - All calculated 'datetime_iso' values MUST be in UTC and ending with 'Z'.
+           - EXAMPLE: If current time is "2024-01-01T12:00:00Z" and user says "in 10 seconds", output "2024-01-01T12:00:10Z".
+           - DO NOT output local time (e.g. +03:00). ALWAYS use 'Z'.
 
         5. Return ONLY a JSON object matching this schema.
         
