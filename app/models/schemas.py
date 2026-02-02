@@ -16,6 +16,7 @@ class ProcessedAction(BaseModel):
     content: str
     category: Optional[str] = None
     datetime_iso: Optional[datetime] = None
+    delay_seconds: Optional[int] = None
     priority: Optional[str] = None
     confidence: float
 

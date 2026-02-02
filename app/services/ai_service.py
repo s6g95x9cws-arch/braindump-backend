@@ -187,9 +187,17 @@ class AIService:
            - IMPORTANT: The "Current Date/Time" above is in UTC (Z-suffixed).
            - All calculated 'datetime_iso' values MUST be in UTC and ending with 'Z'.
            - EXAMPLE: If current time is "2024-01-01T12:00:00Z" and user says "in 10 seconds", output "2024-01-01T12:00:10Z".
+           - IMPORTANT: The "Current Date/Time" above is in UTC (Z-suffixed).
+           - All calculated 'datetime_iso' values MUST be in UTC and ending with 'Z'.
+           - EXAMPLE: If current time is "2024-01-01T12:00:00Z" and user says "in 10 seconds", output "2024-01-01T12:00:10Z".
            - DO NOT output local time (e.g. +03:00). ALWAYS use 'Z'.
+           
+         5. FOR ALARMS AND REMINDERS ONLY:
+           - Calculate 'delay_seconds' from the Current Date/Time.
+           - Example: "Alarm in 2 minutes" -> delay_seconds = 120.
+           - This is CRITICAL for mobile timers.
 
-        5. Return ONLY a JSON object matching this schema.
+         6. Return ONLY a JSON object matching this schema.
         
         Schema:
         {{
@@ -227,7 +235,8 @@ class AIService:
            
         3. If there is a date explicitly visible in the image (like on an invitation), use that for 'datetime_iso'.
         4. ALL ISO Dates MUST BE IN UTC and end with 'Z'.
-        5. Return ONLY a JSON object matching the BrainDump schema.
+        5. FOR ALARMS: Calculate 'delay_seconds' if possible (e.g. "Timer for 5 mins" -> 300).
+        6. Return ONLY a JSON object matching the BrainDump schema.
         
         Schema (Same as audio/text):
         {{
